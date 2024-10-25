@@ -12,6 +12,10 @@ on:
     secrets:
       token:
         required: true
+    outputs:
+      version: 
+        description: "The input version passed back to the output"
+        value: ${{ jobs.update-version.outputs.version }}
 
 permissions:
   contents: read
@@ -21,7 +25,7 @@ jobs:
   update-version:
     runs-on: ubuntu-latest
     outputs: 
-      new-version: ${{inputs.version}}
+      version: ${{inputs.version}}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
