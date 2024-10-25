@@ -30,7 +30,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
-        repository: "jonathanCS-org/called-repo"
+        repository: "jonathanCS-org/called-repo-qual"
         token: ${{secrets.token}}
         ref: main
     - name: Find and replace repo version
