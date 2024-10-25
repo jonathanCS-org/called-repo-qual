@@ -1,0 +1,47 @@
+name: Reusable workflow example
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      repo:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        repository: "jonathanCS-org/called-repo"
+        token: ${{secrets.token}}
+        ref: main
+    - name: Find and replace repo version
+      run: |
+        # Find and replace any occurrences of <repo>//module?ref=<old-version> with <repo>//module?ref=<new-version>
+        find . -type f -name "*.tf" -exec sed -i 's|source = "git@github.com:jonathanCS-org/${{ inputs.repo }}//\(.*\)?ref=.*"|source = "git@github.com:jonathanCS-org/${{ inputs.repo }}//\1?ref=${{ inputs.version }}"|' {} +
+    - name: Create branch and check it out
+      run: |
+       git config --global user.name 'GitHub Actions'
+       git config --global user.email 'githubaction@github.com'
+       git checkout -b chore/update-to-${{inputs.version}}
+       git add .
+       git commit -m "version update"
+       git push --set-upstream origin chore/update-to-${{inputs.version}}
+      env:
+        GITHUB_TOKEN: ${{ secrets.token }}
+    - name: Create pull request
+      run: gh pr create -B main -H chore/update-to-${{inputs.version}} --title 'Merge chore/update-to-${{inputs.version}} into main' --body 'Created by Github action'
+      env:
+        GITHUB_TOKEN: ${{ secrets.token }}
